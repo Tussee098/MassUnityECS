@@ -16,10 +16,13 @@ namespace Mover
             ecb = SystemAPI
                 .GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
-            new SetRandomValueJob
+
+            var job = new SetRandomValueJob
             {
                 ECB = ecb
-            }.Schedule();
+            }.Schedule(state.Dependency);
+            state.Dependency = job;
+
         }
     }
 

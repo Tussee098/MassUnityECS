@@ -279,7 +279,7 @@ MonoBehaviour:
   minZoom: 1
   maxZoom: 50
   zoomPanScale: 0.2
-  clampToBounds: 0
+  clampToRanges: 0
   minXY: {x: -200, y: -200}
   maxXY: {x: 200, y: 200}
 --- !u!1 &619394800

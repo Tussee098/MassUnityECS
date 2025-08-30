@@ -1,12 +1,9 @@
-﻿using UnityEngine;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Life;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Burst;
 using Living;
-using Unity.VisualScripting;
-using System;
 
 namespace Mover
 {
@@ -21,10 +18,15 @@ namespace Mover
 
         public void OnUpdate(ref SystemState state)
         {
+            var ecb = SystemAPI
+                .GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
+
             var dt = SystemAPI.Time.DeltaTime;
 
             new MoverJob
             {
+                ECB = ecb.AsParallelWriter(),
                 dt = dt
             }.ScheduleParallel();
         }
@@ -35,6 +37,8 @@ namespace Mover
     [BurstCompile]
     public partial struct MoverJob : IJobEntity
     {
+        public EntityCommandBuffer.ParallelWriter ECB;
+
         public float dt;
 
         // Tunables (good defaults)
@@ -67,24 +71,31 @@ namespace Mover
             float s = math.sin(rad), c = math.cos(rad);
             return new float2(c * v.x - s * v.y, s * v.x + c * v.y);
         }
-        static void MoveTowardsPosition(float2 position, LocalTransform tf)
+        static void MoveTowardsPosition(float2 position, ref LocalTransform tf, float dt, WanderState wander, MoverComponent mover)
         {
-            var dir = math.normalize(tf.Position.xy - position.xy);
+            var newDir = math.normalize(position.xy - tf.Position.xy);
+            float speed = mover.speed * math.max(0f, wander.speedMul);
+            float2 step = newDir * (speed * dt);
+            tf.Position += new float3(step.x, step.y, 0f);
         }
 
-        void Execute(ref LocalTransform tf,
-                     ref IndividualRandomValue randomValue,
-                     ref WanderState wander,
-                     ref TargetPositionComponent targetPositionComponent,
-                     in Home home,
-                     in MoverComponent mover)
+        void Execute([EntityIndexInQuery] int index,
+                    Entity entity,
+                    ref LocalTransform tf,
+                    ref IndividualRandomValue randomValue,
+                    ref WanderState wander,
+                    ref TargetPositionComponent targetPositionComponent,
+                    in Home home,
+                    in MoverComponent mover)
         {
             var rng = randomValue.value;
 
             if (targetPositionComponent.active)
             {
-                MoveTowardsPosition(targetPositionComponent.position, tf);
-                return;
+                MoveTowardsPosition(targetPositionComponent.position, ref tf, dt, wander, mover);
+                if (math.distance(tf.Position.xy, targetPositionComponent.position) < 0.01f) return;
+                targetPositionComponent.active = false;
+                
             }
             // --- Init once ---
             if (!math.any(wander.dir != 0))
@@ -193,13 +204,13 @@ namespace Mover
             float2 step = newDir * (speed * dt);
             tf.Position += new float3(step.x, step.y, 0f);
 
+            //ECB.SetComponentEnabled<UpdateCellTag>(index, entity, true);
+
             // --- Persist ---
             wander.dir = newDir;
             randomValue.value = rng;
         }
-
         
     }
-
 
 }

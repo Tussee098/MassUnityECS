@@ -26,6 +26,8 @@ namespace Living
                 {
                     mask = (int)authoring.TargetLayers
                 });
+
+                //AddComponent(entity, new UpdateCellTag { });
             }
         }
     }
