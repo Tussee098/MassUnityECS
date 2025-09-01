@@ -1,8 +1,10 @@
 ﻿using Unity.Mathematics;
 using Unity.Entities;
+using Unity.Burst;
 
 namespace Mover
 {
+    [BurstCompile]
     public partial struct SetRandomValueSystem : ISystem
     {
         EntityCommandBuffer ecb;
@@ -26,6 +28,7 @@ namespace Mover
         }
     }
 
+    [BurstCompile]
     public partial struct SetRandomValueJob : IJobEntity
     {
         public EntityCommandBuffer ECB;

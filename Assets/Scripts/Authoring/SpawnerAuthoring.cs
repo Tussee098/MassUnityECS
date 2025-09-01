@@ -47,7 +47,7 @@ namespace Life
             }
         }
     }
-    public struct SpawnerComponent : IComponentData
+    public struct SpawnerComponent : IComponentData, IEnableableComponent
     {
         public Entity prefab;
         public int amount;

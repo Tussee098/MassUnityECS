@@ -4,16 +4,20 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Burst;
 using Living;
+using Unity.Collections;
 
 namespace Mover
 {
     [BurstCompile]
     public partial struct MoverSystem : ISystem
     {
-
+        private ComponentLookup<TargetEntityComponent> _targetEntityComponentLookup;
+        private ComponentLookup<CarryingComponent> _carryingComponentLookup;
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<MoverComponent>();
+            _targetEntityComponentLookup = SystemAPI.GetComponentLookup<TargetEntityComponent>();
+            _carryingComponentLookup = SystemAPI.GetComponentLookup<CarryingComponent>();
         }
 
         public void OnUpdate(ref SystemState state)
@@ -23,10 +27,14 @@ namespace Mover
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
             var dt = SystemAPI.Time.DeltaTime;
+            _targetEntityComponentLookup.Update(ref state);
+            _carryingComponentLookup.Update(ref state);
 
             new MoverJob
             {
                 ECB = ecb.AsParallelWriter(),
+                TargetEntityComponentLookup = _targetEntityComponentLookup,
+                CarryingComponentLookup = _carryingComponentLookup,
                 dt = dt
             }.ScheduleParallel();
         }
@@ -38,6 +46,9 @@ namespace Mover
     public partial struct MoverJob : IJobEntity
     {
         public EntityCommandBuffer.ParallelWriter ECB;
+
+        [ReadOnly] public ComponentLookup<TargetEntityComponent> TargetEntityComponentLookup;
+        [ReadOnly] public ComponentLookup<CarryingComponent> CarryingComponentLookup;
 
         public float dt;
 
@@ -84,18 +95,21 @@ namespace Mover
                     ref LocalTransform tf,
                     ref IndividualRandomValue randomValue,
                     ref WanderState wander,
-                    ref TargetPositionComponent targetPositionComponent,
-                    in Home home,
-                    in MoverComponent mover)
+                    ref MoverComponent mover,
+                    in Home home
+                    )
         {
             var rng = randomValue.value;
 
-            if (targetPositionComponent.active)
+            if (CarryingComponentLookup.IsComponentEnabled(entity))
             {
-                MoveTowardsPosition(targetPositionComponent.position, ref tf, dt, wander, mover);
-                if (math.distance(tf.Position.xy, targetPositionComponent.position) < 0.01f) return;
-                targetPositionComponent.active = false;
-                
+                MoveTowardsPosition(home.position, ref tf, dt, wander, mover);
+                return;
+            }
+            if (TargetEntityComponentLookup.IsComponentEnabled(entity))
+            {
+                MoveTowardsPosition(TargetEntityComponentLookup[entity].position, ref tf, dt, wander, mover);
+                return;
             }
             // --- Init once ---
             if (!math.any(wander.dir != 0))
@@ -185,7 +199,7 @@ namespace Mover
 
             // --- Home “suggestion” bias (soft, not enforcing) ---
             float2 pos = new float2(tf.Position.x, tf.Position.y);
-            float2 fromHome = pos - home.pos;
+            float2 fromHome = pos - home.position;
             float dist = math.length(fromHome);
             float2 outward = dist > 1e-5f ? fromHome / dist : float2.zero;
 

@@ -17,10 +17,8 @@ namespace Living
                     range = authoring.range
                 });
 
-                AddComponent(entity, new TargetPositionComponent
-                {
-                    active = false,
-                });
+                AddComponent(entity, new TargetEntityComponent { });
+                SetComponentEnabled<TargetEntityComponent>(entity, false);
 
                 AddComponent(entity, new TargetMaskComponent
                 {

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
+using Living;
 
 namespace Life
 {
@@ -30,6 +31,11 @@ namespace Life
                 });
 
                 AddComponent(entity, new WanderState());
+                AddComponent(entity, new CarryingComponent
+                {
+
+                });
+                SetComponentEnabled<CarryingComponent>(entity, false);
             }
         }
     }

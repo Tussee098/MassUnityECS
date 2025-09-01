@@ -32,7 +32,12 @@ namespace Mover
     public partial struct SpawnerJob : IJobEntity
     {
         public EntityCommandBuffer ECB;
-        public void Execute(Entity entity, LocalTransform transform, SpawnerComponent spawner, IndividualRandomValue randomValue)
+        public void Execute(
+            Entity entity,
+            LocalTransform transform,
+            SpawnerComponent spawner, 
+            IndividualRandomValue randomValue
+            )
         {
             for (int i = 0; i < spawner.amount; i++)
             {
@@ -53,7 +58,8 @@ namespace Mover
                 ));
                 ECB.AddComponent(inst, new Home
                 {
-                    pos = transform.Position.xy
+                    entity = entity,
+                    position = transform.Position.xy
                 });
                 ECB.SetComponent(inst, new MoverComponent
                 {
@@ -69,10 +75,11 @@ namespace Mover
             }
             ECB.RemoveComponent<SpawnerComponent>(entity);
         }
-
     }
+
     public struct Home : IComponentData
     {
-        public float2 pos;
+        public Entity entity;
+        public float2 position;
     }
 }

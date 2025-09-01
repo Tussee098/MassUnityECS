@@ -9,6 +9,7 @@ using Fundamental;
 using Cleanup;
 
 namespace Living {
+    [BurstCompile]
     [UpdateBefore(typeof(EntityDestroyerSystem))]
     public partial struct DetectionRangeSystem : ISystem
     {
@@ -91,6 +92,8 @@ namespace Living {
     }
 
     [BurstCompile]
+    [WithDisabled(typeof(CarryingComponent))]
+    [WithDisabled(typeof(TargetEntityComponent))]
     public partial struct InRangeCheckJob : IJobEntity
     {
         public float CellSize;
@@ -115,9 +118,14 @@ namespace Living {
             bool found = false;
             float2 foundPos = default;
 
+            Entity targetEntity = entity;
+
             // Scan 3×3 neighbors
-            for (int dy = -1; dy <= 1 && !found; dy++)
-                for (int dx = -1; dx <= 1 && !found; dx++)
+            // -1 and 1 should be -x and x 
+            int x = (int)math.ceil(sightRange.range);
+
+            for (int dy = -x; dy <= x && !found; dy++)
+                for (int dx = -x; dx <= x && !found; dx++)
                 {
                     var key = new Cell { x = baseCell.x + dx, y = baseCell.y + dy };
                     if (CellEntityMapReference.TryGetFirstValue(key, out var e, out var it))
@@ -139,7 +147,7 @@ namespace Living {
                             // Passed all filters — keep it
                             found = true;
                             foundPos = eTx.Position.xy;
-                            ECB.SetComponentEnabled<DestroyEntityTag>(index, e, true);
+                            targetEntity = e;
                         } while (!found && CellEntityMapReference.TryGetNextValue(out e, ref it));
                     }
                 }
@@ -147,11 +155,15 @@ namespace Living {
             if (!found) return;
 
             // Write result
-            ECB.SetComponent(index, entity, new TargetPositionComponent
+            ECB.SetComponent(index, entity, new TargetEntityComponent
             {
-                active = true,
-                position = foundPos
+                position = foundPos,
+                entity = targetEntity
             });
+
+            ECB.SetComponentEnabled<TargetEntityComponent>(index, entity, true);
+
+            
         }
     }
     public struct Cell : IEquatable<Cell>
