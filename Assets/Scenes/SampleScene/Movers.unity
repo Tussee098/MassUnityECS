@@ -173,7 +173,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6733848204792532932, guid: 371c95f02e56d0c48bfeab205fb78eca, type: 3}
       propertyPath: amount
-      value: 5
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6733848204792532932, guid: 371c95f02e56d0c48bfeab205fb78eca, type: 3}
       propertyPath: speedRange.x
@@ -250,7 +250,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6733848204792532932, guid: ef1637dc4e145e44cb37dbf1f935bbfa, type: 3}
       propertyPath: amount
-      value: 10
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6733848204792532932, guid: ef1637dc4e145e44cb37dbf1f935bbfa, type: 3}
       propertyPath: homePullRange.x
@@ -295,7 +295,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7104936289881685618, guid: 6f418a9486ffc7f4aa86eb56fbab45c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.51
+      value: -0.01
       objectReference: {fileID: 0}
     - target: {fileID: 7104936289881685618, guid: 6f418a9486ffc7f4aa86eb56fbab45c7, type: 3}
       propertyPath: m_LocalPosition.y

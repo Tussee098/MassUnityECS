@@ -36,13 +36,15 @@ namespace Life
                     prefab = GetEntity(authoring.objectToSpawn, TransformUsageFlags.Dynamic),
                     amount = authoring.amount,
                     scale = authoring.scale,
-                    
+
                     speedRange = authoring.speedRange,
                     turnRateRange = authoring.turnRateRange,
                     leashRadiusRange = authoring.leashRadiusRange,
                     homePullRange = authoring.homePullRange,
                     minJitterPeriodRange = authoring.jitterStrengthRange,
                     maxJitterPeriodRange = authoring.minJitterPeriodRange,
+
+                    contraints = authoring.constraints
                 });
             }
         }
@@ -59,6 +61,7 @@ namespace Life
         public float2 jitterStrengthRange;
         public float2 minJitterPeriodRange;
         public float2 maxJitterPeriodRange;
+
         public float2 contraints;
     }
 }

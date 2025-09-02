@@ -4,6 +4,8 @@ using Unity.Transforms;
 using Unity.Mathematics;
 using Unity.Burst;
 
+using UnityEngine;
+
 namespace Mover
 {
     [BurstCompile]
@@ -28,7 +30,7 @@ namespace Mover
         }
     }
 
-    [BurstCompile]
+    //[BurstCompile]
     public partial struct SpawnerJob : IJobEntity
     {
         public EntityCommandBuffer ECB;
@@ -36,7 +38,7 @@ namespace Mover
             Entity entity,
             LocalTransform transform,
             SpawnerComponent spawner, 
-            IndividualRandomValue randomValue
+            ref IndividualRandomValue randomValue
             )
         {
             for (int i = 0; i < spawner.amount; i++)
@@ -44,10 +46,8 @@ namespace Mover
                 var inst = ECB.Instantiate(spawner.prefab);
                 var rng = randomValue.value;
 
-                // Pick a random 2D position in [-10,10] range
                 float2 rand2D = rng.NextFloat2(new float2(-spawner.contraints.x, -spawner.contraints.y), new float2(spawner.contraints.x, spawner.contraints.y));
-
-                // Make it a float3 (z = 0 for 2D)
+                
                 float3 pos = new float3(transform.Position.x + rand2D.x, transform.Position.y + rand2D.y, 0);
 
                 // Apply transform

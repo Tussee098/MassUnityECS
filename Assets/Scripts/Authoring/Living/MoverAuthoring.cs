@@ -2,6 +2,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 using Living;
+using Optimizing;
 
 namespace Life
 {
@@ -36,8 +37,16 @@ namespace Life
 
                 });
                 SetComponentEnabled<CarryingComponent>(entity, false);
+                AddComponent(entity, new Steering());
+                AddComponent(entity, new ThinkBucket());
+                AddComponent(entity, new NeedsBucketInitTag());
             }
         }
+    }
+    public struct Steering : IComponentData
+    {
+        public float2 desiredDir;
+        public float speedMul;
     }
     public struct WanderState : IComponentData
     {
